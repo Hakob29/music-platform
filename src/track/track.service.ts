@@ -6,7 +6,7 @@ import { Album, AlbumDocument } from './schemas/album-schema';
 import { CommentDocument, Comment } from './schemas/comment-schema';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import mongoose from 'mongoose';
+import { FileService, FileType } from 'src/file/file.service';
 
 
 @Injectable()
@@ -15,13 +15,18 @@ export class TrackService {
         @InjectModel(Track.name) private readonly trackModel: Model<TrackDocument>,
         @InjectModel(Comment.name) private readonly commentModel: Model<CommentDocument>,
         @InjectModel(Album.name) private readonly albumModel: Model<AlbumDocument>,
+        private readonly fileSerivce: FileService
     ) { }
 
     //CREATE TRACK
-    async create(createTrack: CreateTrackDto): Promise<Track> {
+    async create(createTrack: CreateTrackDto, picture: Express.Multer.File, audio: Express.Multer.File): Promise<Track> {
+        const audioPath = this.fileSerivce.createFile(FileType.AUDIO, audio);
+        const picturePath = this.fileSerivce.createFile(FileType.IMAGE, picture);
         const track = await this.trackModel.create({
             ...createTrack,
-            listens: 0
+            listens: 0,
+            audio: audioPath,
+            picture: picturePath
         });
         return track;
     }

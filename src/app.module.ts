@@ -1,16 +1,22 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TrackController } from './track/track.controller';
 import { TrackModule } from './track/track.module';
-import { TrackService } from './track/track.service';
+import { FileModule } from './file/file.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import * as path from "path"
+
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.DB_URL),
-    TrackModule
+    ServeStaticModule.forRoot({
+      rootPath: path.resolve(__dirname, "static")
+    }),
+    TrackModule,
+    FileModule
   ],
   controllers: [],
   providers: [],
