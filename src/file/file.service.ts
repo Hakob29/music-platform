@@ -11,7 +11,7 @@ export enum FileType {
 @Injectable()
 export class FileService {
 
-
+    //CREATE AUDIO AND PICTURE FILES
     createFile(type: FileType, file: any): string {
         try {
             const fileExtension = file.originalname.split(".").pop();
@@ -27,7 +27,23 @@ export class FileService {
         }
     }
 
+    //DELETE AUDIO AND PICTURE FILES
     removeFile(fileName: string) {
+        try {
+            const filePath = path.resolve(__dirname, "..", "static/" + fileName);
+            fs.stat(filePath, function (err, stats) {
+                if (err) {
+                    return console.error(err);
+                }
 
+                fs.unlink(filePath, function (err) {
+                    if (err) return console.log(err);
+                    console.log('audio and picture deleted successfully');
+                });
+            });
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
     }
 }

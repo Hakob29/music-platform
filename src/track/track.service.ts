@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Track, TrackDocument } from './schemas/track-schema';
 import { Model } from 'mongoose';
@@ -32,8 +32,8 @@ export class TrackService {
     }
 
     //GET ALL TRACKS
-    async getAll(): Promise<Track[]> {
-        return await this.trackModel.find()
+    async getAll(count: number = 10, offset: number = 0): Promise<Track[]> {
+        return await this.trackModel.find().skip(offset).limit(count);
     }
 
     //GET TRACK BY ID
@@ -43,10 +43,20 @@ export class TrackService {
         return track;
     }
 
+    //SEARCH TRACKS
+    async search(trackName: string) {
+        const track = await this.trackModel.find({
+            name: { $regex: new RegExp(trackName, 'i') }
+        });
+        return track;
+    }
+
     //DELETE TRACK BY ID
     async delete(id: number): Promise<any> {
         const track = await this.trackModel.findById(id);
         if (!track) throw new Error("Track Not found!!!");
+        this.fileSerivce.removeFile(track.picture);
+        this.fileSerivce.removeFile(track.audio);
         return await this.trackModel.findByIdAndDelete(id);
     }
 
@@ -57,5 +67,13 @@ export class TrackService {
         track.comments.push(comment.id);
         await track.save()
         return comment;
+    }
+
+    //LISTENER CHECK
+    async listen(id: string) {
+        const track = await this.trackModel.findById(id);
+        if (!track) throw new Error("Track Not found!!!");
+        track.listens += 1;
+        await track.save()
     }
 }

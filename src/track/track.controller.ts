@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { count } from 'console';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { Track } from './schemas/track-schema';
@@ -25,8 +26,10 @@ export class TrackController {
 
     //GET ALL TRACKS
     @Get("/getAll")
-    async getAll(): Promise<Track[]> {
-        return await this.trackService.getAll()
+    async getAll(
+        @Query('count') count: number,
+        @Query("offset") offset: number): Promise<Track[]> {
+        return await this.trackService.getAll(count, offset)
     }
 
     //GET TRACK BY ID
@@ -35,6 +38,12 @@ export class TrackController {
         @Param("id") id: number
     ): Promise<Track> {
         return this.trackService.getOne(id);
+    }
+
+    //SERACHE TRACKS
+    @Get("/search")
+    async search(@Query("trackName") trackName: string) {
+        return await this.trackService.search(trackName);
     }
 
     //DELETE TRACK BY ID
@@ -50,6 +59,12 @@ export class TrackController {
     async addComment(
         @Body() dto: CreateCommentDto) {
         return await this.trackService.addComment(dto);
+    }
+
+    //LISTENER CHECK
+    @Post("/listen/:id")
+    async listen(@Param("id") id: string) {
+        return await this.trackService.listen(id);
     }
 
 }
