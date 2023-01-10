@@ -61,6 +61,12 @@ export class TrackController {
         return await this.trackService.addComment(dto);
     }
 
+    //DELETE COMMENT 
+    @Delete("delete/comment/:id")
+    async deleteComment(@Param("id") id: string) {
+        return await this.trackService.deleteComment(id);
+    }
+
     //LISTENER CHECK
     @Post("/listen/:id")
     async listen(@Param("id") id: string) {

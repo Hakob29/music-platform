@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Track, TrackDocument } from './schemas/track-schema';
 import { Model } from 'mongoose';
@@ -53,11 +53,13 @@ export class TrackService {
 
     //DELETE TRACK BY ID
     async delete(id: number): Promise<any> {
-        const track = await this.trackModel.findById(id);
+        const track = await this.trackModel.findById(id).populate("comments");
         if (!track) throw new Error("Track Not found!!!");
+        const commentId = track.comments[0]["_id"].valueOf();
+        await this.deleteComment(commentId);
         this.fileSerivce.removeFile(track.picture);
         this.fileSerivce.removeFile(track.audio);
-        return await this.trackModel.findByIdAndDelete(id);
+        return await this.trackModel.findByIdAndDelete(track.id);
     }
 
     //ADD COMMENT TO TRACK
@@ -67,6 +69,14 @@ export class TrackService {
         track.comments.push(comment.id);
         await track.save()
         return comment;
+    }
+
+
+    //DELETE COMMENT 
+    async deleteComment(id: string) {
+        const comment = await this.commentModel.findById(id);
+        if (!comment) throw new Error("Comment dont found...");
+        return await this.commentModel.findByIdAndDelete(id);
     }
 
     //LISTENER CHECK
